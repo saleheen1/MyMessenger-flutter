@@ -1,7 +1,12 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:my_messenger/views/auth/signIn.dart';
+import 'package:my_messenger/views/home.dart';
+import 'package:my_messenger/views/services/auth.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -15,7 +20,16 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SignIn(),
+      home: FutureBuilder(
+        future: AuthMethod().getCurrentUser(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return HomePage();
+          } else {
+            return SignIn();
+          }
+        },
+      ),
     );
   }
 }
