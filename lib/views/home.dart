@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:my_messenger/views/auth/signIn.dart';
+import 'package:my_messenger/views/chatScreen.dart';
 import 'package:my_messenger/views/others/constants.dart';
 import 'package:my_messenger/views/services/auth.dart';
 import 'package:my_messenger/views/services/database.dart';
@@ -29,17 +31,52 @@ class _HomePageState extends State<HomePage> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return Expanded(
-            child: SizedBox(
-              height: 200,
-              child: ListView.builder(
-                shrinkWrap: true,
-                scrollDirection: Axis.vertical,
-                itemCount: snapshot.data.docs.length,
-                itemBuilder: (context, index) {
-                  DocumentSnapshot ds = snapshot.data.docs[index];
-                  return Image.network(ds["imgUrl"]);
-                },
-              ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              itemCount: snapshot.data.docs.length,
+              itemBuilder: (context, index) {
+                DocumentSnapshot ds = snapshot.data.docs[index];
+                return InkWell(
+                  onTap: () {
+                    Get.to(ChatScreen(
+                      chatWithUsername: ds["username"],
+                      name: ds["name"],
+                    ));
+                  },
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.network(
+                          ds["imgUrl"],
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${ds["name"]}",
+                            style: TextStyle(
+                                fontSize: 17,
+                                color: kGrey,
+                                fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            "${ds["email"]}",
+                            style: TextStyle(fontSize: 15, color: kGrey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           );
         } else {
@@ -86,59 +123,71 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(22.0),
-          child: Container(
-            child: Row(
-              children: [
-                isSearching == true
-                    ? GestureDetector(
-                        onTap: () {
-                          isSearching = false;
-                          searchUserEditingController.text = "";
-                          setState(() {});
-                        },
-                        child: Padding(
-                            padding: EdgeInsets.fromLTRB(10, 15, 20, 15),
-                            child: Icon(Icons.arrow_back)),
-                      )
-                    : Container(
-                        height: 10,
-                      ),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 6),
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                            color: kSecondaryGrey,
-                            width: 1,
-                            style: BorderStyle.solid),
-                        borderRadius: BorderRadius.circular(24)),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            child: TextField(
-                          controller: searchUserEditingController,
-                          decoration: InputDecoration(
-                              border: InputBorder.none, hintText: "username"),
-                        )),
-                        GestureDetector(
-                            onTap: () {
-                              if (searchUserEditingController.text != "") {
-                                onSearchButtonClick();
-                              }
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  isSearching == true
+                      ? GestureDetector(
+                          onTap: () {
+                            isSearching = false;
+                            searchUserEditingController.text = "";
+                            setState(() {});
+                          },
+                          child: Padding(
+                              padding: EdgeInsets.fromLTRB(10, 15, 20, 15),
+                              child: Icon(Icons.arrow_back)),
+                        )
+                      : Container(
+                          height: 10,
+                        ),
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 6),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                              color: kSecondaryGrey,
+                              width: 1,
+                              style: BorderStyle.solid),
+                          borderRadius: BorderRadius.circular(24)),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: TextField(
+                            controller: searchUserEditingController,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "username",
+                              focusColor: kGrey,
+                              hoverColor: kGrey,
+                            ),
+                          )),
+                          GestureDetector(
+                              onTap: () {
+                                if (searchUserEditingController.text != "") {
+                                  onSearchButtonClick();
+                                }
 
-                              // if (searchUsernameEditingController.text != "") {
-                              //   onSearchBtnClick();
-                              // }
-                            },
-                            child: Icon(Icons.search))
-                      ],
+                                // if (searchUsernameEditingController.text != "") {
+                                //   onSearchBtnClick();
+                                // }
+                              },
+                              child: Icon(
+                                Icons.search,
+                                color: kGrey,
+                              ))
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                isSearching ? searchUserList() : chatRoomList()
-              ],
-            ),
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              isSearching ? searchUserList() : chatRoomList()
+            ],
           ),
         ),
       ),
