@@ -17,4 +17,15 @@ class DatabaseMethods {
         .where("username", isEqualTo: userName)
         .snapshots();
   }
+
+  //adding chat messages to firebase
+  Future addMessage(
+      String chatRoomId, String messageId, Map messageInfoMap) async {
+    return FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(chatRoomId)
+        .collection("chats")
+        .doc(messageId)
+        .set(messageInfoMap);
+  }
 }
