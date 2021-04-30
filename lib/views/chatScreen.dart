@@ -17,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController messageTextEditingController = TextEditingController();
 
   getChatRoomIdByUsernames(String name1, String name2) {
+    //name1 is the persone we search and nama2 is my name
     if (name1.substring(0, 1).codeUnitAt(0) >
         name2.substring(0, 1).codeUnitAt(0)) {
       return "$name2\_$name1";
@@ -51,11 +52,25 @@ class _ChatScreenState extends State<ChatScreen> {
         messageId = randomAlphaNumeric(12);
         DatabaseMethods()
             .addMessage(
-              chatRoomId,
-              messageId,
-              messageInfoMap,
-            )
-            .then((value) {});
+          chatRoomId,
+          messageId,
+          messageInfoMap,
+        )
+            .then((value) {
+          Map<String, dynamic> lastMessageInfoMap = {
+            "lastMessage": message,
+            "lastMessageSendTS": lastMessageTS,
+            "lastMessageSendBy": myUserName,
+          };
+          DatabaseMethods()
+              .updateLastMessageSend(chatRoomId, lastMessageInfoMap);
+        });
+        if (sendClicked) {
+          //remove message from the input field
+          messageTextEditingController.text = "";
+          //make messageId blank to get regenearted on next message send
+          messageId = "";
+        }
       }
     }
   }

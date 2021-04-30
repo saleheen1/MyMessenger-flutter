@@ -28,4 +28,27 @@ class DatabaseMethods {
         .doc(messageId)
         .set(messageInfoMap);
   }
+
+  updateLastMessageSend(String chatRoomId, Map lastMessageInfoMap) {
+    return FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(chatRoomId)
+        .update(lastMessageInfoMap);
+  }
+
+  createChatRoom(String chatRoomId, Map chatRoomInfoMap) async {
+    final snapShot = await FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(chatRoomId)
+        .get();
+
+    if (snapShot.exists) {
+      return true;
+    } else {
+      return FirebaseFirestore.instance
+          .collection("chatrooms")
+          .doc(chatRoomId)
+          .set(chatRoomInfoMap);
+    }
+  }
 }

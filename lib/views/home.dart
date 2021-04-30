@@ -7,6 +7,8 @@ import 'package:my_messenger/views/others/constants.dart';
 import 'package:my_messenger/views/services/auth.dart';
 import 'package:my_messenger/views/services/database.dart';
 
+import 'helper/sharedPref_helper.dart';
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -25,6 +27,24 @@ class _HomePageState extends State<HomePage> {
         .getUserByUserName(searchUserEditingController.text);
   }
 
+  getChatRoomIdByUsernames(String name1, String name2) {
+    //name1 is the persone we search and nama2 is my name
+    if (name1.substring(0, 1).codeUnitAt(0) >
+        name2.substring(0, 1).codeUnitAt(0)) {
+      return "$name2\_$name1";
+    } else {
+      return "$name1\_$name2";
+    }
+  }
+
+  String myName, myProfilePic, myUserName, myEmail;
+  getMyLocalInfo() async {
+    myName = await SharedPrefHelper().getDisplayName();
+    myProfilePic = await SharedPrefHelper().getUserProfileUrl();
+    myUserName = await SharedPrefHelper().getUsername();
+    myEmail = await SharedPrefHelper().getUserEmail();
+  }
+
   Widget searchUserList() {
     return StreamBuilder(
       stream: usersStream,
@@ -39,6 +59,13 @@ class _HomePageState extends State<HomePage> {
                 DocumentSnapshot ds = snapshot.data.docs[index];
                 return InkWell(
                   onTap: () {
+                    var chatRoomId =
+                        getChatRoomIdByUsernames(myUserName, ds["username"]);
+                    Map<String, dynamic> chatRoomInfoMap = {
+                      "users": [myUserName, ds["username"]]
+                    };
+                    DatabaseMethods()
+                        .createChatRoom(chatRoomId, chatRoomInfoMap);
                     Get.to(ChatScreen(
                       chatWithUsername: ds["username"],
                       name: ds["name"],
@@ -90,6 +117,12 @@ class _HomePageState extends State<HomePage> {
 
   Widget chatRoomList() {
     return Container();
+  }
+
+  @override
+  void initState() {
+    getMyLocalInfo();
+    super.initState();
   }
 
   @override
