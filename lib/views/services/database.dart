@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_messenger/views/helper/sharedPref_helper.dart';
 
 class DatabaseMethods {
   //inserting data
@@ -50,5 +51,31 @@ class DatabaseMethods {
           .doc(chatRoomId)
           .set(chatRoomInfoMap);
     }
+  }
+
+  Future<Stream<QuerySnapshot>> getChatRoomMessages(chatRoomId) async {
+    return FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(chatRoomId)
+        .collection("chats")
+        // .orderBy("ts", descending: true)
+        .orderBy("ts")
+        .snapshots();
+  }
+
+  Future<Stream<QuerySnapshot>> getChatRooms() async {
+    String myUsername = await SharedPrefHelper().getUsername();
+    return FirebaseFirestore.instance
+        .collection("chatrooms")
+        .orderBy("lastMessageSendTS", descending: true)
+        .where("users", arrayContains: myUsername)
+        .snapshots();
+  }
+
+  Future<QuerySnapshot> getUserInfo(String username) async {
+    return await FirebaseFirestore.instance
+        .collection("Users")
+        .where("username", isEqualTo: username)
+        .get();
   }
 }

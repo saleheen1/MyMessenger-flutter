@@ -18,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   bool isSearching = false;
   TextEditingController searchUserEditingController = TextEditingController();
 
-  Stream usersStream;
+  Stream usersStream, chatRoomsStream;
   onSearchButtonClick() async {
     setState(() {
       isSearching = true;
@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   getChatRoomIdByUsernames(String name1, String name2) {
-    //name1 is the persone we search and nama2 is my name
+    //name1 is the persone we search and name2 is my name
     if (name1.substring(0, 1).codeUnitAt(0) >
         name2.substring(0, 1).codeUnitAt(0)) {
       return "$name2\_$name1";
@@ -115,13 +115,38 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget chatRoomList() {
-    return Container();
+  Widget chatRoomsList() {
+    return StreamBuilder(
+      stream: chatRoomsStream,
+      builder: (context, snapshot) {
+        return snapshot.hasData
+            ? ListView.builder(
+                itemCount: snapshot.data.docs.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot ds = snapshot.data.docs[index];
+                  // return Text(
+                  //     ds.id.replaceAll(myUserName, "").replaceAll("_", ""));
+                  return ChatRoomListTile(ds["lastMessage"], ds.id, myUserName);
+                })
+            : Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  getMyChatRooms() async {
+    chatRoomsStream = await DatabaseMethods().getChatRooms();
+    setState(() {});
+  }
+
+  onScreenLoad() async {
+    await getMyLocalInfo();
+    getMyChatRooms();
   }
 
   @override
   void initState() {
-    getMyLocalInfo();
+    onScreenLoad();
     super.initState();
   }
 
@@ -219,9 +244,84 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 height: 20,
               ),
-              isSearching ? searchUserList() : chatRoomList()
+              isSearching ? searchUserList() : chatRoomsList()
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ChatRoomListTile extends StatefulWidget {
+  final String lastMessage, chatRoomId, myUsername;
+  ChatRoomListTile(this.lastMessage, this.chatRoomId, this.myUsername);
+
+  @override
+  _ChatRoomListTileState createState() => _ChatRoomListTileState();
+}
+
+class _ChatRoomListTileState extends State<ChatRoomListTile> {
+  String profilePicUrl = "", name = "", username = "";
+
+  getThisUserInfo() async {
+    username =
+        widget.chatRoomId.replaceAll(widget.myUsername, "").replaceAll("_", "");
+    QuerySnapshot querySnapshot = await DatabaseMethods().getUserInfo(username);
+    print("the docs data here ${querySnapshot.docs[0]["imgUrl"]}}");
+    name = "${querySnapshot.docs[0]["name"]}";
+    profilePicUrl = "${querySnapshot.docs[0]["imgUrl"]}";
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    getThisUserInfo();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChatScreen(
+                      chatWithUsername: username,
+                      name: name,
+                    )));
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            profilePicUrl != ""
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: Image.network(
+                      profilePicUrl,
+                      height: 40,
+                      width: 40,
+                    ),
+                  )
+                : Container(
+                    height: 40,
+                    width: 40,
+                  ),
+            SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 3),
+                Text(widget.lastMessage)
+              ],
+            )
+          ],
         ),
       ),
     );
