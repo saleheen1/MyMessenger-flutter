@@ -293,6 +293,9 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
                     )));
       },
       child: Container(
+        width: double.infinity,
+        color: Colors.transparent,
+        padding: EdgeInsets.all(10),
         margin: EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
@@ -310,16 +313,21 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
                     width: 40,
                   ),
             SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 3),
-                Text(widget.lastMessage)
-              ],
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    widget.lastMessage,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                ],
+              ),
             )
           ],
         ),

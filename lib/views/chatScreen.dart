@@ -113,6 +113,9 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return ListView.builder(
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             itemCount: snapshot.data.docs.length,
             itemBuilder: (context, index) {
               DocumentSnapshot ds = snapshot.data.docs[index];
@@ -145,6 +148,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         iconTheme: IconThemeData(
           color: kGrey, //change your color here
@@ -161,53 +165,57 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(26.0),
-        child: Container(
-          child: Stack(
-            children: [
-              chatMessages(),
-              Container(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
                 child: Container(
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                          margin: EdgeInsets.only(right: 2),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            color: Color(0xffF4F4F4),
-                          ),
-                          child: TextField(
-                            controller: messageTextEditingController,
-                            onChanged: (value) {
-                              addMessage(false);
-                            },
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: "type a message",
-                                hintStyle: TextStyle(color: kGrey)),
-                          ),
+                    padding: EdgeInsets.only(bottom: 60),
+                    child: chatMessages())),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: EdgeInsets.only(top: 15),
+                color: Colors.white,
+                height: 60,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        margin: EdgeInsets.only(right: 2),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: Color(0xffF4F4F4),
+                        ),
+                        child: TextField(
+                          controller: messageTextEditingController,
+                          onChanged: (value) {
+                            addMessage(false);
+                          },
+                          decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "type a message",
+                              hintStyle: TextStyle(color: kGrey)),
                         ),
                       ),
-                      InkWell(
-                        onTap: () {
-                          addMessage(true);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Icon(
-                            Icons.send,
-                            color: kGrey,
-                          ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        addMessage(true);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Icon(
+                          Icons.send,
+                          color: kGrey,
                         ),
-                      )
-                    ],
-                  ),
+                      ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
+              ),
+            )
+          ],
         ),
       ),
     );
